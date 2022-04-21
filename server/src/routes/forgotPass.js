@@ -2,6 +2,7 @@ const router = require('express').Router();
 const crypto = require('crypto');
 
 const DB = require('../database');
+const sendResetPass = require('../services/emails/sendMail');
 
 const clientIp = process.env.CLIENT_IP;
 const frontPort = process.env.CLIENT_PORT;
@@ -25,6 +26,7 @@ router.post('/forgotpass', async (req, res) => {
         const token = crypto.createHash('sha1').update(password).digest('hex');
         const resetPassLink = `http://${clientIp}:${frontPort}/resetpass/${id}/${token}`;
         /* Send reset password mail with reset password link */
+        sendResetPass(email, firstName, lastName, resetPassLink);
         res.status(200).send("Password link has been sent to you're email");
       }
     );
