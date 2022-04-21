@@ -12,18 +12,16 @@ class DB {
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
     });
+
+    //   DB.dbInstance.connect((err) => {
+    //     if (err) throw err;
+    //     console.log('Connected to DB!');
+    //   });
   }
 
   static getDbInstance() {
     return DB.dbInstance;
   }
 }
-
-const initDb = () => {
-  //   dbConnection.connect((err) => {
-  //     if (err) throw err;
-  //     console.log('Connected to DB!');
-  //   });
-};
 
 module.exports = DB;
