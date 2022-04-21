@@ -9,7 +9,6 @@ const frontPort = process.env.CLIENT_PORT;
 router.post('/forgotpass', async (req, res) => {
   try {
     const { email } = req.body;
-    console.log(DB.getDbInstance());
     DB.getDbInstance().query(
       'SELECT * FROM users where email = (?)',
       [email],
