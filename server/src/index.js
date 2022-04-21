@@ -1,5 +1,5 @@
 const express = require('express');
-require('./database').initDb();
+require('./database').initDB();
 console.log(require('./database').db);
 const app = express();
 const cors = require('cors');
