@@ -21,7 +21,7 @@ router.post(
         const { id, email, hashedPassword, oldPasswords, salt } = authData.user;
         if (error) {
           console.log(error);
-          res.status(500).send('An authentication error occurred');
+          res.status(400).send('An authentication error occurred');
           return;
         }
         const currenHashedPassword = crypto
@@ -29,7 +29,7 @@ router.post(
           .update(salt + currentPassword)
           .digest('hex');
         if (currenHashedPassword != hashedPassword) {
-          res.status(500).send('Password is incorrect');
+          res.status(400).send('Password is incorrect');
           return;
         }
         const newHashedPassword = crypto

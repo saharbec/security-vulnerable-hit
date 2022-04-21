@@ -13,14 +13,14 @@ router.post('/Search', verifyToken, async (req, res) => {
       [authData.user.email, `%`],
       (err, result) => {
         if (err) {
-          res.status(500).send('An error occurred');
+          res.status(400).send('An error occurred');
         } else {
           res.status(200).send(result);
         }
       }
     );
   } catch {
-    res.status(500).send('An error occurred');
+    res.status(400).send('An error occurred');
   }
 });
 
@@ -34,7 +34,7 @@ router.post('/Search', verifyToken, async (req, res) => {
 //         res.json({result})
 //     } catch(error) {
 //         console.log(error)
-//         res.status(500).send("An error occurred");
+//         res.status(400).send("An error occurred");
 //     }
 // });
 

@@ -21,7 +21,9 @@ const Nav = () => {
       'x-access-token': localStorage.getItem('token'),
     };
     if (headers['x-access-token']) {
-      Axios.get(`${config.serverURL}/authentication_status`, { headers: headers })
+      Axios.get(`${config.serverURL}/authentication_status`, {
+        headers: headers,
+      })
         .then((response) => {
           setAuthStatus(true);
         })
@@ -98,7 +100,13 @@ const Nav = () => {
           {navArray.map((item) => {
             return (
               item.authenticationRequired === authStatus && (
-                <Typography key={item.title} m={2} t={3} variant="h6" component="div">
+                <Typography
+                  key={item.title}
+                  m={2}
+                  t={3}
+                  variant="h6"
+                  component="div"
+                >
                   <Button onClick={item.function} color="inherit">
                     {item.title}
                   </Button>
@@ -106,6 +114,9 @@ const Nav = () => {
               )
             );
           })}
+          <Typography sx={{ ml: 'auto', fontWeight: 'bold' }}>
+            Vulnerable
+          </Typography>
         </Toolbar>
       </AppBar>
     </Box>

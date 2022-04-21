@@ -46,7 +46,10 @@ const Login = () => {
   };
 
   const handleChange = (prop) => (event) => {
-    setUserPasswordValues({ ...UserPasswordvalues, [prop]: event.target.value });
+    setUserPasswordValues({
+      ...UserPasswordvalues,
+      [prop]: event.target.value,
+    });
   };
 
   const handleSubmit = (event) => {
@@ -84,7 +87,14 @@ const Login = () => {
         <Typography component="h1" variant="h5">
           Sign in
         </Typography>
-        <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }} display="flex" flexDirection="column">
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          noValidate
+          sx={{ mt: 1 }}
+          display="flex"
+          flexDirection="column"
+        >
           <TextField
             margin="normal"
             required
@@ -97,7 +107,9 @@ const Login = () => {
           />
           <Grid item xs={12}>
             <FormControl variant="outlined">
-              <InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
+              <InputLabel htmlFor="outlined-adornment-password">
+                Password
+              </InputLabel>
               <OutlinedInput
                 id="password"
                 label="Password"
@@ -113,18 +125,30 @@ const Login = () => {
                       onMouseDown={handleMouseDownPassword}
                       edge="end"
                     >
-                      {UserPasswordvalues.showPassword ? <VisibilityOff /> : <Visibility />}
+                      {UserPasswordvalues.showPassword ? (
+                        <VisibilityOff />
+                      ) : (
+                        <Visibility />
+                      )}
                     </IconButton>
                   </InputAdornment>
                 }
               />
             </FormControl>
           </Grid>
-          <FormControlLabel control={<Checkbox value="remember" color="primary" />} label="Remember me" />
-          <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
+          <FormControlLabel
+            control={<Checkbox value="remember" color="primary" />}
+            label="Remember me"
+          />
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{ mt: 3, mb: 2 }}
+          >
             Sign In
           </Button>
-          <Grid container flexDirection="column">
+          <Grid container display="flex" flexDirection="column">
             <Grid item xs>
               <Link href="/forgotpass" variant="body2">
                 Forgot password?
@@ -132,7 +156,7 @@ const Login = () => {
             </Grid>
             <Grid item>
               <Link href="/Register" variant="body2">
-                Don't have an account? Sign Up
+                Don't have an account?
               </Link>
             </Grid>
           </Grid>

@@ -1,7 +1,5 @@
 const mysql = require('mysql');
 
-let dbConnection;
-
 class DB {
   static dbInstance;
 

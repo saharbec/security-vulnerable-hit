@@ -14,7 +14,7 @@ router.post('/forgotpass', async (req, res) => {
       [email],
       async (error, results, fields) => {
         if (error) {
-          res.status(500).send('An error occurred');
+          res.status(400).send('An error occurred');
           return;
         }
         if (results.length === 0) {
@@ -30,7 +30,7 @@ router.post('/forgotpass', async (req, res) => {
     );
   } catch (error) {
     console.log(error);
-    res.status(500).send('An error occurred');
+    res.status(400).send('An error occurred');
   }
 });
 

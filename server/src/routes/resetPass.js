@@ -15,7 +15,7 @@ router.post('/resetpass', passwordValidation, async (req, res) => {
       async (error, results, fields) => {
         // if SQL Error
         if (error) {
-          res.status(500).send('An error occurred');
+          res.status(400).send('An error occurred');
           return;
         }
         if (!results.length) {

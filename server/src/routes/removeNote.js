@@ -14,7 +14,7 @@ router.post('/removeNote', verifyToken, async (req, res) => {
     res.status(200).send('Note removes');
   } catch (error) {
     console.log(error);
-    res.status(500).send('An error occurred');
+    res.status(400).send('An error occurred');
   }
 });
 

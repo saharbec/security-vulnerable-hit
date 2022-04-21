@@ -10,7 +10,7 @@ router.post('/addNote', verifyToken, async (req, res) => {
     process.env.TOKEN_KEY,
     (error, authData) => {
       if (error) {
-        res.status(500).send('An authentication error occurred');
+        res.status(401).send('An authentication error occurred');
       } else {
         try {
           DB.getDbInstance().query(
@@ -19,14 +19,14 @@ router.post('/addNote', verifyToken, async (req, res) => {
             (err, result) => {
               if (err) {
                 console.log(err);
-                res.status(500).send('An error occurred');
+                res.status(400).send('An error occurred');
               } else {
                 res.status(200).send('Node created successfully');
               }
             }
           );
         } catch {
-          res.status(500).send('An error occurred');
+          res.status(400).send('An error occurred');
         }
       }
     }
