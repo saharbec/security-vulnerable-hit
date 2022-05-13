@@ -2,7 +2,7 @@ const router = require('express').Router();
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 
-const passwordConfig = require('../config');
+const passwordConfig = require('../config.json');
 const DB = require('../database');
 
 router.post('/login', async (req, res) => {
@@ -34,25 +34,25 @@ router.post('/login', async (req, res) => {
           .update(password)
           .digest('hex');
         DB.getDbInstance().query(
-          `SELECT id, oldPasswords FROM users where email='${email}' and password='${hashedPassword}'`,
+          `SELECT id FROM users where email='${email}' and password='${hashedPassword}'`,
           (error, results) => {
             if (error) {
               res.status(400).send('An error occurred, error code : 32');
               return;
             }
             if (results.length === 0) {
-              res.status(400).send('User password is incorrect');
+              res.status(400).send('Invalid credentials');
               DB.getDbInstance().query(
                 `UPDATE users SET failedLoginAttempts = failedLoginAttempts+1 WHERE email = '${email}'`
               );
               return;
             }
-            const { id, oldPasswords } = results[0];
+            const { id } = results[0];
             DB.getDbInstance().query(
               `UPDATE users SET failedLoginAttempts = 0 WHERE email = '${email}'`
             );
             token = jwt.sign(
-              { user: { id, email, hashedPassword, oldPasswords, salt } },
+              { user: { id, email, hashedPassword, salt } },
               process.env.TOKEN_KEY
             );
             res.json({ token });

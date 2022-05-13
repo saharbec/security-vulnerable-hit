@@ -4,12 +4,12 @@ const jwt = require('jsonwebtoken');
 const DB = require('../database');
 const verifyToken = require('../middlewares/auth');
 
-router.post('/Search', verifyToken, async (req, res) => {
+router.get('/search', verifyToken, async (req, res) => {
   try {
     authData = jwt.verify(req.headers['x-access-token'], process.env.TOKEN_KEY);
 
     DB.getDbInstance().query(
-      `SELECT title , content FROM notes WHERE email = (?) AND title LIKE '${req.body.search}%'`, // SQL INJECTION
+      `SELECT id, title, content FROM notes WHERE email = (?) AND title LIKE '${req.query.term}%'`, // !SQL INJECTION
       [authData.user.email, `%`],
       (err, result) => {
         if (err) {

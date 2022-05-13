@@ -10,12 +10,11 @@ router.post('/register', passwordValidation, async (req, res) => {
     // if (!passwordValidation(password)) { res.status(400).send("Password must meet minimum requirements"); return; }
     const salt = crypto.randomBytes(10).toString('base64');
     const hmac = crypto.createHmac('sha1', salt);
-    console.log({ hmac });
     hmac.update(password);
     const hashedPassword = hmac.digest('hex');
     DB.getDbInstance().query(
       // !SQL INJECTION
-      `INSERT INTO users (email,password,firstName,lastname) VALUES ('${email}','${hashedPassword}','${firstName}','${lastName}')`,
+      `INSERT INTO users (email,password,firstName,lastname,salt) VALUES ('${email}','${hashedPassword}','${firstName}','${lastName}', '${salt}')`,
       (err, result) => {
         if (err) {
           console.error({ err });

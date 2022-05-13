@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 
 const passwordValidation = require('../middlewares/passwordValidation.js');
-const passwordConfig = require('../config');
+const passwordConfig = require('../config.json');
 const DB = require('../database/index.js');
 
 router.post('/resetpass', passwordValidation, async (req, res) => {

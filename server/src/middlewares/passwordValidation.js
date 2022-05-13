@@ -1,5 +1,6 @@
 const { passwordRequirements } = require('../config.json');
 const fs = require('fs');
+const path = require('path');
 
 const passwordValidation = (req, res, next) => {
   const password = req.body.password || req.body.newPassword;
@@ -12,7 +13,10 @@ const passwordValidation = (req, res, next) => {
   }
   let valid = true;
 
-  data = fs.readFileSync('./common passwords.txt');
+  data = fs.readFileSync(
+    path.resolve(__dirname, '../../common passwords.txt'),
+    'utf8'
+  );
   if (data.indexOf(password) >= 0) {
     return res.status(400).send('Password is too common');
   }

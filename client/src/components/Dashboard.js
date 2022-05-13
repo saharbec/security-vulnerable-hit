@@ -17,7 +17,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 
-import PopUp from './PopUp';
 import config from '../config';
 
 const fabStyle = {
@@ -27,10 +26,16 @@ const fabStyle = {
 };
 
 const Dashboard = () => {
-  const [search, setSearch] = useState('');
-  const [noteList, setNoteList] = useState([]);
-  const [popUpInfo, setPopUpInfo] = useState({});
   const history = useHistory();
+
+  const [searchValue, setSearchValue] = useState('');
+  const [notesList, setNoteList] = useState([]);
+
+  const [newNoteValues, setNewNotesValues] = useState({
+    title: '',
+    content: '',
+  });
+
   const { enqueueSnackbar } = useSnackbar();
 
   const getHeaders = useCallback(() => {
@@ -40,10 +45,12 @@ const Dashboard = () => {
   }, []);
 
   const validateAuthenticated = useCallback(async () => {
-    if (getHeaders()['x-access-token']) {
+    const headers = getHeaders();
+    if (headers['x-access-token']) {
       try {
-        await Axios.get(`${config.serverUrl}/authentication_status`, { headers: getHeaders() });
-        searchNotes(search);
+        await Axios.get(`${config.serverUrl}/authentication_status`, {
+          headers,
+        });
       } catch (error) {
         history.push('/Login');
       }
@@ -52,20 +59,38 @@ const Dashboard = () => {
     }
   }, [history, getHeaders]);
 
+  const searchNotes = useCallback(
+    async (text) => {
+      try {
+        const headers = getHeaders();
+        const response = await Axios.get(`${config.serverUrl}/search`, {
+          params: { term: text },
+          headers,
+        });
+        setNoteList(response.data);
+      } catch (error) {
+        const massage = error.response ? error.response.data : 'Network Error';
+        enqueueSnackbar(massage, { variant: 'error' });
+      }
+    },
+    [enqueueSnackbar, getHeaders]
+  );
+
   useEffect(() => {
     validateAuthenticated();
-  }, [validateAuthenticated]);
+    searchNotes('');
+  }, [validateAuthenticated, searchNotes]);
 
   const handleAddNote = (event) => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
     Axios.post(
       `${config.serverUrl}/addNote`,
-      { title: data.get('title'), content: data.get('content') },
+      { title: newNoteValues.title, content: newNoteValues.content },
       { headers: getHeaders() }
     )
       .then((response) => {
-        searchNotes(search);
+        setNewNotesValues({ title: '', content: '' });
+        searchNotes(searchValue);
         enqueueSnackbar(response.data, { variant: 'success' });
       })
       .catch((error) => {
@@ -77,24 +102,18 @@ const Dashboard = () => {
   const onClickSearch = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    setSearch(data.get('search'));
-    searchNotes(search);
-  };
-
-  const searchNotes = async (text) => {
-    try {
-      const response = await Axios.post(`${config.serverUrl}/Search`, { search: text }, { headers: getHeaders() });
-      setNoteList(response.data);
-    } catch (error) {
-      const massage = error.response ? error.response.data : 'Network Error';
-      enqueueSnackbar(massage, { variant: 'error' });
-    }
+    setSearchValue(data.get('search'));
+    searchNotes(data.get('search'));
   };
 
   const handleRemoveNote = async (item) => {
     try {
-      await Axios.post(`${config.serverUrl}/removeNote`, { title: item.title }, { headers: getHeaders() });
-      searchNotes(search);
+      await Axios.post(
+        `${config.serverUrl}/removeNote`,
+        { title: item.title },
+        { headers: getHeaders() }
+      );
+      searchNotes(searchValue);
     } catch (error) {
       const massage = error.response ? error.response.data : 'Network Error';
       enqueueSnackbar(massage, { variant: 'error' });
@@ -103,12 +122,6 @@ const Dashboard = () => {
 
   return (
     <Container component="main" maxWidth="xs">
-      <PopUp
-        info={popUpInfo}
-        handleClose={() => {
-          setPopUpInfo(false);
-        }}
-      ></PopUp>
       <CssBaseline />
       <Box
         sx={{
@@ -122,59 +135,116 @@ const Dashboard = () => {
               Dashboard
               </Typography> */}
 
-        <Box component="form" noValidate onSubmit={handleAddNote} sx={{ mt: 3 }}>
-          <Typography component="h1" variant="h5">
+        <Box
+          component="form"
+          noValidate
+          onSubmit={handleAddNote}
+          sx={{ mt: 3 }}
+        >
+          <Typography component="h1" variant="h5" mb={2}>
             Add note
           </Typography>
           <Grid container spacing={2}>
-            <Grid item xs={6} sm={6}>
-              <TextField required fullWidth id="title" label="Title" name="title" />
+            <Grid item xs={6}>
+              <TextField
+                required
+                fullWidth
+                value={newNoteValues.title}
+                onChange={(e) =>
+                  setNewNotesValues({ ...newNoteValues, title: e.target.value })
+                }
+                id="title"
+                label="Title"
+                name="title"
+              />
             </Grid>
 
-            <Grid item xs={12} sm={12}>
-              <TextField required fullWidth multiline id="Content" label="Content" name="content" />
+            <Grid item xs={12}>
+              <TextField
+                required
+                fullWidth
+                value={newNoteValues.content}
+                onChange={(e) =>
+                  setNewNotesValues({
+                    ...newNoteValues,
+                    content: e.target.value,
+                  })
+                }
+                multiline
+                id="Content"
+                label="Content"
+                name="content"
+              />
             </Grid>
 
-            <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}
+            >
               Add Note
             </Button>
           </Grid>
         </Box>
 
-        <Box component="form" noValidate onSubmit={onClickSearch} sx={{ mt: 3 }}>
-          <Typography component="h1" variant="h5">
+        <Box
+          component="form"
+          noValidate
+          onSubmit={onClickSearch}
+          sx={{ mt: 3 }}
+        >
+          <Typography component="h1" variant="h5" mb={2}>
             My Notes
           </Typography>
           <Grid container spacing={2} sx={{ flexGrow: 1 }}>
             <Grid item xs={6} sm={14}>
-              <TextField required fullWidth id="search" label="Search" name="search" />
+              <TextField
+                fullWidth
+                id="search"
+                label="Search by title"
+                name="search"
+              />
 
-              <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                sx={{ mt: 3, mb: 2 }}
+              >
                 Search
               </Button>
             </Grid>
           </Grid>
-          <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-            {noteList.map((item) => {
+          <Grid
+            container
+            rowSpacing={1}
+            columnSpacing={{ xs: 1, sm: 2, md: 3 }}
+          >
+            {notesList.map((note) => {
               return (
-                <Grid item xs={6}>
+                <Grid item xs={6} key={note.id}>
                   <Card sx={{ maxWidth: 300 }}>
                     <CardActionArea>
                       <CardContent>
                         <Typography gutterBottom variant="h5" component="div">
-                          {item.title}
+                          {note.title}
                         </Typography>
-                        {/* <div contentEditable='true' dangerouslySetInnerHTML={{ __html: item.content }}></div> //XSS */}
-                        <Typography variant="body2" color="text.secondary">
-                          {item.content}
-                        </Typography>
+                        {/* XSS */}
+                        <div
+                          contentEditable="true"
+                          dangerouslySetInnerHTML={{ __html: note.content }}
+                        ></div>
+                        {/* <Typography variant="body2" color="text.secondary">
+                          {note.content}
+                        </Typography> */}
 
                         <Tooltip
                           sx={fabStyle}
                           title="Delete"
                           placement="right"
                           onClick={() => {
-                            handleRemoveNote(item);
+                            handleRemoveNote(note);
                           }}
                         >
                           <IconButton>

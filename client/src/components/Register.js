@@ -209,28 +209,21 @@ const Register = () => {
             </Alert>
           )}
           {passwordConfig &&
-            Object.keys(passwordConfig.character.settings).reduce(
-              (filtered, key) => {
-                if (passwordConfig.character.settings[key]) {
-                  let re = new RegExp(passwordConfig.character.regex[key]);
-                  filtered.push(
-                    <Alert
-                      key={key}
-                      // severity={re.test(userPassword) ? "success" : "error"}
-                      severity={
-                        re.test(UserPasswordValues.password)
-                          ? 'success'
-                          : 'error'
-                      }
-                    >
-                      {key}
-                    </Alert>
-                  );
-                }
-                return filtered;
-              },
-              []
-            )}
+            Object.entries(passwordConfig.character.settings)
+              .filter(([key, value]) => value)
+              .map(([key, value]) => {
+                const re = new RegExp(passwordConfig.character.regex[key]);
+                return (
+                  <Alert
+                    key={key}
+                    severity={
+                      re.test(UserPasswordValues.password) ? 'success' : 'error'
+                    }
+                  >
+                    {key}
+                  </Alert>
+                );
+              })}
           <Button
             type="submit"
             fullWidth

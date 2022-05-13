@@ -21,7 +21,7 @@ const Nav = () => {
       'x-access-token': localStorage.getItem('token'),
     };
     if (headers['x-access-token']) {
-      Axios.get(`${config.serverURL}/authentication_status`, {
+      Axios.get(`${config.serverUrl}/authentication_status`, {
         headers: headers,
       })
         .then((response) => {

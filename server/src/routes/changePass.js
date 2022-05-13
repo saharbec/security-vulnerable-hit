@@ -4,7 +4,7 @@ const crypto = require('crypto');
 
 const verifyToken = require('../middlewares/auth');
 const passwordValidation = require('../middlewares/passwordValidation.js');
-const passwordConfig = require('../config');
+const passwordConfig = require('../config.json');
 const { db } = require('../database');
 const DB = require('../database');
 

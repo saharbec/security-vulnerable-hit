@@ -45,7 +45,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/passwordRequirements', (req, res) => {
-  res.send(require('./config')['password requirements']);
+  res.send(require('./config.json')['passwordRequirements']);
 });
 
 app.get('/authentication_status', authMiddleware, (req, res) => {
@@ -57,10 +57,10 @@ app.post('/test', (req, res) => {
   res.status(200).send('test');
 });
 
+app.get('/search', searchRoute);
 app.post('/login', loginRoute);
 app.post('/register', registerRoute);
 app.post('/addNote', addNoteRoute);
-app.post('/search', searchRoute);
 app.post('/removeNote', removeNoteRoute);
 app.post('/changePassword', changePassRoute);
 app.post('/forgotpass', forgotPassRoute);
