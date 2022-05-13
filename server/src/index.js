@@ -3,7 +3,6 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 require('./database').initDB();
-console.log(require('./database').db);
 const app = express();
 const cors = require('cors');
 const https = require('https');
