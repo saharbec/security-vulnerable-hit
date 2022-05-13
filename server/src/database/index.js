@@ -11,10 +11,10 @@ class DB {
       database: process.env.DB_NAME,
     });
 
-    //   DB.dbInstance.connect((err) => {
-    //     if (err) throw err;
-    //     console.log('Connected to DB!');
-    //   });
+    DB.dbInstance.connect((err) => {
+      if (err) throw err;
+      console.log('Connected to DB!');
+    });
   }
 
   static getDbInstance() {

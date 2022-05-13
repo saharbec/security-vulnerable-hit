@@ -1,4 +1,4 @@
-const passwordRequirements = require('../config')['password requirements'];
+const { passwordRequirements } = require('../config.json');
 const fs = require('fs');
 
 const passwordValidation = (req, res, next) => {
@@ -6,13 +6,15 @@ const passwordValidation = (req, res, next) => {
   if (passwordRequirements['min password length'] > password.length) {
     return res
       .status(400)
-      .send(`password must contain more than ${passwordRequirements['min password length']} characters`);
+      .send(
+        `password must contain more than ${passwordRequirements['min password length']} characters`
+      );
   }
   let valid = true;
 
   data = fs.readFileSync('./common passwords.txt');
   if (data.indexOf(password) >= 0) {
-    return res.status(400).send('password too common');
+    return res.status(400).send('Password is too common');
   }
 
   Object.keys(passwordRequirements.character.settings).forEach((key) => {

@@ -9,7 +9,7 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     DB.getDbInstance().query(
-      `SELECT salt,failedLoginAttempts FROM users where email='${email}'`,
+      `SELECT salt,failedLoginAttempts FROM users where email='${email}'`, // !SQL Injection
       (error, results) => {
         if (error) {
           res.status(400).send('An error occurred, error code : 31');
@@ -30,8 +30,8 @@ router.post('/login', async (req, res) => {
           return;
         }
         const hashedPassword = crypto
-          .createHash('sha1')
-          .update(salt + password)
+          .createHmac('sha1', salt)
+          .update(password)
           .digest('hex');
         DB.getDbInstance().query(
           `SELECT id, oldPasswords FROM users where email='${email}' and password='${hashedPassword}'`,

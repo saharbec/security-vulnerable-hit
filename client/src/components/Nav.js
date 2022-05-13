@@ -114,8 +114,10 @@ const Nav = () => {
               )
             );
           })}
-          <Typography sx={{ ml: 'auto', fontWeight: 'bold' }}>
-            Vulnerable
+          <Typography
+            sx={{ ml: 'auto', fontWeight: 'bold', cursor: 'default' }}
+          >
+            Comunication_LTD
           </Typography>
         </Toolbar>
       </AppBar>

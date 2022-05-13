@@ -1,15 +1,16 @@
 const express = require('express');
+const dotenv = require('dotenv');
+dotenv.config();
+
 require('./database').initDB();
 console.log(require('./database').db);
 const app = express();
 const cors = require('cors');
-const dotenv = require('dotenv');
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
 
 const authMiddleware = require('./middlewares/auth');
-dotenv.config();
 
 const loginRoute = require('./routes/login');
 const registerRoute = require('./routes/register');
@@ -34,10 +35,10 @@ const options = {
   cert: fs.readFileSync(path.resolve(__dirname, '../../cert/cert.pem')),
 };
 
-const sslServer = https.createServer(options, app);
+const tlsServer = https.createServer(options, app);
 
-sslServer.listen(PORT, () => {
-  console.log(`SSL Server is running on port ${PORT}`);
+tlsServer.listen(PORT, () => {
+  console.log(`TLS Server is running on port ${PORT}`);
 });
 
 app.get('/', (req, res) => {

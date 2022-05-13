@@ -30,7 +30,7 @@ const Register = () => {
   const { enqueueSnackbar } = useSnackbar();
 
   const [passwordConfig, setPasswordConfig] = useState(null);
-  const [UserPasswordvalues, setUserPasswordValues] = useState({
+  const [UserPasswordValues, setUserPasswordValues] = useState({
     password: '',
     showPassword: false,
   });
@@ -42,7 +42,10 @@ const Register = () => {
         `${config.serverUrl}/passwordRequirements`
       );
       setPasswordConfig(response.data);
-      enqueueSnackbar('password requirements set', { variant: 'success' });
+      enqueueSnackbar('Password requirements set', {
+        variant: 'success',
+        preventDuplicate: true,
+      });
     } catch (error) {
       const massage = error.response ? error.response.data : 'Network Error';
       enqueueSnackbar(massage, { variant: 'error' });
@@ -55,8 +58,8 @@ const Register = () => {
 
   const handleClickShowPassword = () => {
     setUserPasswordValues({
-      ...UserPasswordvalues,
-      showPassword: !UserPasswordvalues.showPassword,
+      ...UserPasswordValues,
+      showPassword: !UserPasswordValues.showPassword,
     });
   };
 
@@ -69,7 +72,7 @@ const Register = () => {
       setIsChanged(true);
     }
     setUserPasswordValues({
-      ...UserPasswordvalues,
+      ...UserPasswordValues,
       [prop]: event.target.value,
     });
   };
@@ -79,7 +82,7 @@ const Register = () => {
     const data = new FormData(event.currentTarget);
     Axios.post(`${config.serverUrl}/register`, {
       email: data.get('email'),
-      password: UserPasswordvalues.password,
+      password: UserPasswordValues.password,
       firstName: data.get('firstName'),
       lastName: data.get('lastName'),
     })
@@ -112,7 +115,7 @@ const Register = () => {
           Sign up
         </Typography>
 
-        <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
@@ -142,6 +145,7 @@ const Register = () => {
                 id="email"
                 label="Email Address"
                 name="email"
+                type="email"
                 autoComplete="email"
               />
             </Grid>
@@ -155,9 +159,10 @@ const Register = () => {
                   id="password"
                   label="Password"
                   fullWidth
-                  type={UserPasswordvalues.showPassword ? 'text' : 'password'}
-                  value={UserPasswordvalues.password}
+                  type={UserPasswordValues.showPassword ? 'text' : 'password'}
+                  value={UserPasswordValues.password}
                   onChange={handleChange('password')}
+                  required
                   endAdornment={
                     <InputAdornment position="end">
                       <IconButton
@@ -166,7 +171,7 @@ const Register = () => {
                         onMouseDown={handleMouseDownPassword}
                         edge="end"
                       >
-                        {UserPasswordvalues.showPassword ? (
+                        {UserPasswordValues.showPassword ? (
                           <VisibilityOff />
                         ) : (
                           <Visibility />
@@ -194,7 +199,7 @@ const Register = () => {
               sx={{ marginTop: 2 }}
               severity={
                 passwordConfig['min password length'] <=
-                UserPasswordvalues.password.length
+                UserPasswordValues.password.length
                   ? 'success'
                   : 'error'
               }
@@ -213,7 +218,7 @@ const Register = () => {
                       key={key}
                       // severity={re.test(userPassword) ? "success" : "error"}
                       severity={
-                        re.test(UserPasswordvalues.password)
+                        re.test(UserPasswordValues.password)
                           ? 'success'
                           : 'error'
                       }

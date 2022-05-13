@@ -1,5 +1,5 @@
 {
-  "password requirements": {
+  "passwordRequirements": {
     "min password length": 2,
     "character": {
       "settings": {
