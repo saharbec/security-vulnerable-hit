@@ -7,7 +7,7 @@
     {
       "type": "pwa-node",
       "request": "launch",
-      "name": "Launch Program",
+      "name": "Run Server",
       "skipFiles": ["<node_internals>/**"],
       "outputCapture": "std",
       "envFile": "${workspaceFolder}/server/.env",

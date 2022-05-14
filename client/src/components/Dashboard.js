@@ -25,11 +25,19 @@ const fabStyle = {
   right: 16,
 };
 
+const NOTES_MODE = {
+  ALL_NOTES: 'ALL_NOTES',
+  MY_NOTES: 'MY_NOTES',
+};
+
 const Dashboard = () => {
   const history = useHistory();
 
   const [searchValue, setSearchValue] = useState('');
-  const [notesList, setNoteList] = useState([]);
+  const [notesBySearchList, setNotesBySearchList] = useState([]);
+  const [allNotesList, setAllNotesList] = useState([]);
+
+  const [notesMode, setNotesMode] = useState(NOTES_MODE.ALL_NOTES);
 
   const [newNoteValues, setNewNotesValues] = useState({
     title: '',
@@ -44,20 +52,37 @@ const Dashboard = () => {
     };
   }, []);
 
-  const validateAuthenticated = useCallback(async () => {
+  const toggleNotesMode = () => {
+    if (notesMode === NOTES_MODE.ALL_NOTES) {
+      setNotesMode(NOTES_MODE.MY_NOTES);
+    } else {
+      setNotesMode(NOTES_MODE.ALL_NOTES);
+    }
+  };
+
+  const fetchAllNotes = useCallback(async () => {
+    const headers = getHeaders();
+    const { data: notes } = await Axios.get(`${config.serverUrl}/notes`, {
+      headers,
+    });
+    setAllNotesList(notes);
+  }, [getHeaders]);
+
+  const initPage = useCallback(async () => {
     const headers = getHeaders();
     if (headers['x-access-token']) {
       try {
         await Axios.get(`${config.serverUrl}/authentication_status`, {
           headers,
         });
+        await fetchAllNotes();
       } catch (error) {
         history.push('/Login');
       }
     } else {
       history.push('/Login');
     }
-  }, [history, getHeaders]);
+  }, [history, getHeaders, fetchAllNotes]);
 
   const searchNotes = useCallback(
     async (text) => {
@@ -67,7 +92,7 @@ const Dashboard = () => {
           params: { term: text },
           headers,
         });
-        setNoteList(response.data);
+        setNotesBySearchList(response.data);
       } catch (error) {
         const massage = error.response ? error.response.data : 'Network Error';
         enqueueSnackbar(massage, { variant: 'error' });
@@ -77,9 +102,9 @@ const Dashboard = () => {
   );
 
   useEffect(() => {
-    validateAuthenticated();
+    initPage();
     searchNotes('');
-  }, [validateAuthenticated, searchNotes]);
+  }, [initPage, searchNotes]);
 
   const handleAddNote = (event) => {
     event.preventDefault();
@@ -135,12 +160,7 @@ const Dashboard = () => {
               Dashboard
               </Typography> */}
 
-        <Box
-          component="form"
-          noValidate
-          onSubmit={handleAddNote}
-          sx={{ mt: 3 }}
-        >
+        <Box component="form" noValidate onSubmit={handleAddNote} my={3}>
           <Typography component="h1" variant="h5" mb={2}>
             Add note
           </Typography>
@@ -188,77 +208,125 @@ const Dashboard = () => {
           </Grid>
         </Box>
 
-        <Box
-          component="form"
-          noValidate
-          onSubmit={onClickSearch}
-          sx={{ mt: 3 }}
-        >
-          <Typography component="h1" variant="h5" mb={2}>
-            My Notes
-          </Typography>
-          <Grid container spacing={2} sx={{ flexGrow: 1 }}>
-            <Grid item xs={6} sm={14}>
-              <TextField
-                fullWidth
-                id="search"
-                label="Search by title"
-                name="search"
-              />
+        <Button onClick={toggleNotesMode} my={4}>
+          Go To {notesMode === NOTES_MODE.MY_NOTES ? 'All Notes' : 'My Notes'}
+        </Button>
+        {notesMode === NOTES_MODE.MY_NOTES ? (
+          <React.Fragment>
+            <Grid
+              container
+              rowSpacing={1}
+              columnSpacing={{ xs: 1, sm: 2, md: 3 }}
+            >
+              {notesBySearchList.map((note) => {
+                return (
+                  <Grid item xs={6} key={note.id}>
+                    <Card sx={{ maxWidth: 300 }}>
+                      <CardActionArea>
+                        <CardContent>
+                          <Typography gutterBottom variant="h5" component="div">
+                            {note.title}
+                          </Typography>
 
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                sx={{ mt: 3, mb: 2 }}
-              >
-                Search
-              </Button>
+                          {/* XSS */}
+                          <div
+                            contentEditable="true"
+                            dangerouslySetInnerHTML={{ __html: note.content }}
+                          ></div>
+
+                          {/* XSS SOLUTION */}
+                          {/* <Typography variant="body2" color="text.secondary">
+                        {note.content}
+                      </Typography> */}
+
+                          <Tooltip
+                            sx={fabStyle}
+                            title="Delete"
+                            placement="right"
+                            onClick={() => {
+                              handleRemoveNote(note);
+                            }}
+                          >
+                            <IconButton>
+                              <DeleteIcon />
+                            </IconButton>
+                          </Tooltip>
+                        </CardContent>
+                      </CardActionArea>
+                    </Card>
+                  </Grid>
+                );
+              })}
             </Grid>
-          </Grid>
-          <Grid
-            container
-            rowSpacing={1}
-            columnSpacing={{ xs: 1, sm: 2, md: 3 }}
-          >
-            {notesList.map((note) => {
-              return (
-                <Grid item xs={6} key={note.id}>
-                  <Card sx={{ maxWidth: 300 }}>
-                    <CardActionArea>
-                      <CardContent>
-                        <Typography gutterBottom variant="h5" component="div">
-                          {note.title}
-                        </Typography>
-                        {/* XSS */}
-                        <div
-                          contentEditable="true"
-                          dangerouslySetInnerHTML={{ __html: note.content }}
-                        ></div>
-                        {/* <Typography variant="body2" color="text.secondary">
+            <Box
+              component="form"
+              noValidate
+              onSubmit={onClickSearch}
+              sx={{ mt: 3 }}
+            >
+              <Typography component="h1" variant="h5" mb={2}>
+                My Notes
+              </Typography>
+              <Grid container spacing={2} sx={{ flexGrow: 1 }}>
+                <Grid item xs={6} sm={14}>
+                  <TextField
+                    fullWidth
+                    id="search"
+                    label="Search by title"
+                    name="search"
+                  />
+
+                  <Button
+                    type="submit"
+                    fullWidth
+                    variant="contained"
+                    sx={{ mt: 3, mb: 2 }}
+                  >
+                    Search
+                  </Button>
+                </Grid>
+              </Grid>
+            </Box>
+          </React.Fragment>
+        ) : (
+          <React.Fragment>
+            <Typography component="h1" variant="h5" my={2}>
+              All Notes
+            </Typography>
+            <Grid
+              container
+              rowSpacing={1}
+              columnSpacing={{ xs: 1, sm: 2, md: 3 }}
+            >
+              {allNotesList.map((note) => {
+                return (
+                  <Grid item xs={6} key={note.id}>
+                    <Card sx={{ maxWidth: 300 }}>
+                      <CardActionArea>
+                        <CardContent>
+                          <Typography gutterBottom variant="h5" component="div">
+                            {note.title}
+                          </Typography>
+
+                          {/* XSS */}
+                          <div
+                            contentEditable="true"
+                            dangerouslySetInnerHTML={{ __html: note.content }}
+                          ></div>
+
+                          {/* XSS SOLUTION */}
+                          {/* <Typography variant="body2" color="text.secondary">
                           {note.content}
                         </Typography> */}
-
-                        <Tooltip
-                          sx={fabStyle}
-                          title="Delete"
-                          placement="right"
-                          onClick={() => {
-                            handleRemoveNote(note);
-                          }}
-                        >
-                          <IconButton>
-                            <DeleteIcon />
-                          </IconButton>
-                        </Tooltip>
-                      </CardContent>
-                    </CardActionArea>
-                  </Card>
-                </Grid>
-              );
-            })}
-          </Grid>
-        </Box>
+                        </CardContent>
+                      </CardActionArea>
+                    </Card>
+                  </Grid>
+                );
+              })}
+            </Grid>
+          </React.Fragment>
+        )}
       </Box>
     </Container>
   );

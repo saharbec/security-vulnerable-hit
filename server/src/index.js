@@ -15,6 +15,7 @@ const loginRoute = require('./routes/login');
 const registerRoute = require('./routes/register');
 const addNoteRoute = require('./routes/addNote');
 const searchRoute = require('./routes/search');
+const allNotesRoute = require('./routes/allNotes');
 const removeNoteRoute = require('./routes/removeNote');
 const changePassRoute = require('./routes/changePass');
 const forgotPassRoute = require('./routes/forgotPass');
@@ -58,6 +59,7 @@ app.post('/test', (req, res) => {
 });
 
 app.get('/search', searchRoute);
+app.get('/notes', allNotesRoute);
 app.post('/login', loginRoute);
 app.post('/register', registerRoute);
 app.post('/addNote', addNoteRoute);

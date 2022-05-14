@@ -4,13 +4,12 @@ const jwt = require('jsonwebtoken');
 const DB = require('../database');
 const verifyToken = require('../middlewares/auth');
 
-router.get('/search', verifyToken, async (req, res) => {
+router.get('/notes', verifyToken, async (req, res) => {
   try {
     authData = jwt.verify(req.headers['x-access-token'], process.env.TOKEN_KEY);
 
     DB.getDbInstance().query(
-      `SELECT id, title, content FROM notes WHERE email = (?) AND title LIKE '${req.query.term}%'`, // !SQL INJECTION
-      [authData.user.email, `%`],
+      `SELECT id, title, content FROM notes`,
       (err, result) => {
         if (err) {
           res.status(400).send('An error occurred');
@@ -29,7 +28,6 @@ router.get('/search', verifyToken, async (req, res) => {
 //         authData = jwt.verify(req.headers["x-access-token"], config.TOKEN_KEY)
 //         result = DB.getDbInstance().query("SELECT title , content FROM notes WHERE email = (?) AND title LIKE (?)",
 //             [authData.user.email, `%${req.body.search}%`])
-// !SQL INJECTION SOLUTINO
 
 //         console.log(result)
 //         // res.status(200).send(result);
