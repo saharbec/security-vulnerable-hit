@@ -10,6 +10,9 @@ router.get('/search', verifyToken, async (req, res) => {
   try {
     authData = jwt.verify(req.headers['x-access-token'], process.env.TOKEN_KEY);
 
+    // const safeQuery = DB.getDbInstance().query("SELECT id, name, email FROM customers WHERE title = (?)",
+    //    [authData.user.email, req.query.term]) // !SQL INJECTION SOLUTION
+
     const query = IS_STORED_PROCEDURE
       ? `CALL searchCustomers('${req.query.term}')` // !SQL INJECTION SOLUTION WITH STORED PROCEDURE
       : `SELECT id, name, email FROM customers WHERE name = '${req.query.term}'`; // !SQL INJECTION
