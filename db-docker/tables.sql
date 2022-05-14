@@ -29,9 +29,18 @@ CREATE TABLE passwords(
 
 DELIMITER //
 
-CREATE PROCEDURE getAllCustomers()
+CREATE PROCEDURE getAllCustomers() 
 BEGIN
 	SELECT *  FROM customers;
+END //
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE PROCEDURE searchCustomers(IN term VARCHAR(80)) 
+BEGIN
+	SELECT id, name, email FROM customers WHERE name = term;
 END //
 
 DELIMITER ;

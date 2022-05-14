@@ -4,21 +4,23 @@ const jwt = require('jsonwebtoken');
 const DB = require('../database');
 const verifyToken = require('../middlewares/auth');
 
+const IS_STORED_PROCEDURE = true;
+
 router.get('/search', verifyToken, async (req, res) => {
   try {
     authData = jwt.verify(req.headers['x-access-token'], process.env.TOKEN_KEY);
 
-    DB.getDbInstance().query(
-      `SELECT id, name, email FROM customers WHERE name LIKE '%${req.query.term}%'`, // !SQL INJECTION
-      [authData.user.email],
-      (err, result) => {
-        if (err) {
-          res.status(400).send('An error occurred');
-        } else {
-          res.status(200).send(result);
-        }
+    const query = IS_STORED_PROCEDURE
+      ? `CALL searchCustomers('${req.query.term}')` // !SQL INJECTION SOLUTION WITH STORED PROCEDURE
+      : `SELECT id, name, email FROM customers WHERE name = '${req.query.term}'`; // !SQL INJECTION
+
+    DB.getDbInstance().query(query, [authData.user.email], (err, result) => {
+      if (err) {
+        res.status(400).send('An error occurred');
+      } else {
+        res.status(200).send(IS_STORED_PROCEDURE ? result[0] : result);
       }
-    );
+    });
   } catch {
     res.status(400).send('An error occurred');
   }
@@ -27,7 +29,7 @@ router.get('/search', verifyToken, async (req, res) => {
 // router.post("/Search", verifyToken, async (req, res) => {
 //     try {
 //         authData = jwt.verify(req.headers["x-access-token"], config.TOKEN_KEY)
-//         result = DB.getDbInstance().query("SELECT id, name, email FROM customers WHERE title LIKE (?)",
+//         result = DB.getDbInstance().query("SELECT id, name, email FROM customers WHERE title  (?)",
 //             [authData.user.email, `%${req.query.term}%`])
 // !SQL INJECTION SOLUTION
 

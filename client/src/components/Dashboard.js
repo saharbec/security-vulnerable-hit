@@ -96,10 +96,10 @@ const Dashboard = () => {
       { name, email },
       { headers: getHeaders() }
     )
-      .then((response) => {
+      .then(({ data }) => {
         setNewCustomerValues({ name: '', email: '' });
-        searchCustomers(searchValue);
-        enqueueSnackbar(response.data, { variant: 'success' });
+        enqueueSnackbar(data, { variant: 'success' });
+        fetchAllCustomers();
       })
       .catch((error) => {
         const massage = error.response ? error.response.data : 'Network Error';
@@ -119,7 +119,7 @@ const Dashboard = () => {
       <CssBaseline />
       <Box
         sx={{
-          marginTop: 8,
+          marginTop: 4,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -129,7 +129,7 @@ const Dashboard = () => {
               Dashboard
               </Typography> */}
 
-        <Box component="form" noValidate onSubmit={handleAddCustomer} my={3}>
+        <Box component="form" noValidate onSubmit={handleAddCustomer}>
           <Typography component="h1" variant="h5" mb={2}>
             Add customer
           </Typography>
@@ -200,16 +200,21 @@ const Dashboard = () => {
 
               <Button
                 type="submit"
-                fullWidth
                 variant="contained"
+                fullWidth
                 sx={{ mt: 3, mb: 2 }}
               >
                 Search
               </Button>
+              <Button onClick={fetchAllCustomers} variant="outlined" fullWidth>
+                Show all
+              </Button>
             </Grid>
           </Grid>
         </Box>
-        <TableContainer>
+        <TableContainer
+          style={{ maxHeight: 315, overflow: 'auto', marginTop: 15 }}
+        >
           <Table>
             <TableHead>
               <TableRow>
