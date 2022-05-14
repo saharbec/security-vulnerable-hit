@@ -2,10 +2,15 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Axios from 'axios';
 
 import { useSnackbar } from 'notistack';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
-import { CardActionArea } from '@mui/material';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+} from '@mui/material';
 import { useHistory } from 'react-router';
 import Container from '@mui/material/Container';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -13,35 +18,18 @@ import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import DeleteIcon from '@mui/icons-material/Delete';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
 
 import config from '../config';
-
-const fabStyle = {
-  position: 'absolute',
-  bottom: 16,
-  right: 16,
-};
-
-const NOTES_MODE = {
-  ALL_NOTES: 'ALL_NOTES',
-  MY_NOTES: 'MY_NOTES',
-};
 
 const Dashboard = () => {
   const history = useHistory();
 
   const [searchValue, setSearchValue] = useState('');
-  const [notesBySearchList, setNotesBySearchList] = useState([]);
-  const [allNotesList, setAllNotesList] = useState([]);
+  const [customersBySearchList, setCustomersBySearchList] = useState([]);
 
-  const [notesMode, setNotesMode] = useState(NOTES_MODE.ALL_NOTES);
-
-  const [newNoteValues, setNewNotesValues] = useState({
-    title: '',
-    content: '',
+  const [newCustomerValues, setNewCustomerValues] = useState({
+    email: '',
+    name: '',
   });
 
   const { enqueueSnackbar } = useSnackbar();
@@ -52,20 +40,15 @@ const Dashboard = () => {
     };
   }, []);
 
-  const toggleNotesMode = () => {
-    if (notesMode === NOTES_MODE.ALL_NOTES) {
-      setNotesMode(NOTES_MODE.MY_NOTES);
-    } else {
-      setNotesMode(NOTES_MODE.ALL_NOTES);
-    }
-  };
-
-  const fetchAllNotes = useCallback(async () => {
+  const fetchAllCustomers = useCallback(async () => {
     const headers = getHeaders();
-    const { data: notes } = await Axios.get(`${config.serverUrl}/notes`, {
-      headers,
-    });
-    setAllNotesList(notes);
+    const { data: allCustomers } = await Axios.get(
+      `${config.serverUrl}/customers`,
+      {
+        headers,
+      }
+    );
+    setCustomersBySearchList(allCustomers);
   }, [getHeaders]);
 
   const initPage = useCallback(async () => {
@@ -75,16 +58,16 @@ const Dashboard = () => {
         await Axios.get(`${config.serverUrl}/authentication_status`, {
           headers,
         });
-        await fetchAllNotes();
+        await fetchAllCustomers();
       } catch (error) {
         history.push('/Login');
       }
     } else {
       history.push('/Login');
     }
-  }, [history, getHeaders, fetchAllNotes]);
+  }, [history, getHeaders, fetchAllCustomers]);
 
-  const searchNotes = useCallback(
+  const searchCustomers = useCallback(
     async (text) => {
       try {
         const headers = getHeaders();
@@ -92,7 +75,7 @@ const Dashboard = () => {
           params: { term: text },
           headers,
         });
-        setNotesBySearchList(response.data);
+        setCustomersBySearchList(response.data);
       } catch (error) {
         const massage = error.response ? error.response.data : 'Network Error';
         enqueueSnackbar(massage, { variant: 'error' });
@@ -103,19 +86,19 @@ const Dashboard = () => {
 
   useEffect(() => {
     initPage();
-    searchNotes('');
-  }, [initPage, searchNotes]);
+  }, [initPage]);
 
-  const handleAddNote = (event) => {
+  const handleAddCustomer = (event) => {
     event.preventDefault();
+    const { name, email } = newCustomerValues;
     Axios.post(
-      `${config.serverUrl}/addNote`,
-      { title: newNoteValues.title, content: newNoteValues.content },
+      `${config.serverUrl}/addCustomer`,
+      { name, email },
       { headers: getHeaders() }
     )
       .then((response) => {
-        setNewNotesValues({ title: '', content: '' });
-        searchNotes(searchValue);
+        setNewCustomerValues({ name: '', email: '' });
+        searchCustomers(searchValue);
         enqueueSnackbar(response.data, { variant: 'success' });
       })
       .catch((error) => {
@@ -128,21 +111,7 @@ const Dashboard = () => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     setSearchValue(data.get('search'));
-    searchNotes(data.get('search'));
-  };
-
-  const handleRemoveNote = async (item) => {
-    try {
-      await Axios.post(
-        `${config.serverUrl}/removeNote`,
-        { title: item.title },
-        { headers: getHeaders() }
-      );
-      searchNotes(searchValue);
-    } catch (error) {
-      const massage = error.response ? error.response.data : 'Network Error';
-      enqueueSnackbar(massage, { variant: 'error' });
-    }
+    searchCustomers(data.get('search'));
   };
 
   return (
@@ -160,22 +129,25 @@ const Dashboard = () => {
               Dashboard
               </Typography> */}
 
-        <Box component="form" noValidate onSubmit={handleAddNote} my={3}>
+        <Box component="form" noValidate onSubmit={handleAddCustomer} my={3}>
           <Typography component="h1" variant="h5" mb={2}>
-            Add note
+            Add customer
           </Typography>
           <Grid container spacing={2}>
             <Grid item xs={6}>
               <TextField
                 required
                 fullWidth
-                value={newNoteValues.title}
+                value={newCustomerValues.name}
                 onChange={(e) =>
-                  setNewNotesValues({ ...newNoteValues, title: e.target.value })
+                  setNewCustomerValues({
+                    ...newCustomerValues,
+                    name: e.target.value,
+                  })
                 }
-                id="title"
-                label="Title"
-                name="title"
+                id="name"
+                label="Name"
+                name="name"
               />
             </Grid>
 
@@ -183,17 +155,17 @@ const Dashboard = () => {
               <TextField
                 required
                 fullWidth
-                value={newNoteValues.content}
+                value={newCustomerValues.email}
                 onChange={(e) =>
-                  setNewNotesValues({
-                    ...newNoteValues,
-                    content: e.target.value,
+                  setNewCustomerValues({
+                    ...newCustomerValues,
+                    email: e.target.value,
                   })
                 }
                 multiline
-                id="Content"
-                label="Content"
-                name="content"
+                id="email"
+                label="Email"
+                name="email"
               />
             </Grid>
 
@@ -203,130 +175,61 @@ const Dashboard = () => {
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >
-              Add Note
+              Add Customer
             </Button>
           </Grid>
         </Box>
 
-        <Button onClick={toggleNotesMode} my={4}>
-          Go To {notesMode === NOTES_MODE.MY_NOTES ? 'All Notes' : 'My Notes'}
-        </Button>
-        {notesMode === NOTES_MODE.MY_NOTES ? (
-          <React.Fragment>
-            <Grid
-              container
-              rowSpacing={1}
-              columnSpacing={{ xs: 1, sm: 2, md: 3 }}
-            >
-              {notesBySearchList.map((note) => {
-                return (
-                  <Grid item xs={6} key={note.id}>
-                    <Card sx={{ maxWidth: 300 }}>
-                      <CardActionArea>
-                        <CardContent>
-                          <Typography gutterBottom variant="h5" component="div">
-                            {note.title}
-                          </Typography>
+        <Box
+          component="form"
+          noValidate
+          onSubmit={onClickSearch}
+          sx={{ my: 1 }}
+        >
+          <Typography component="h1" variant="h5" mb={2}>
+            Customers
+          </Typography>
+          <Grid container spacing={2} sx={{ flexGrow: 1 }}>
+            <Grid item xs={6} sm={14}>
+              <TextField
+                fullWidth
+                id="search"
+                label="Search by name"
+                name="search"
+              />
 
-                          {/* XSS */}
-                          <div
-                            contentEditable="true"
-                            dangerouslySetInnerHTML={{ __html: note.content }}
-                          ></div>
-
-                          {/* XSS SOLUTION */}
-                          {/* <Typography variant="body2" color="text.secondary">
-                        {note.content}
-                      </Typography> */}
-
-                          <Tooltip
-                            sx={fabStyle}
-                            title="Delete"
-                            placement="right"
-                            onClick={() => {
-                              handleRemoveNote(note);
-                            }}
-                          >
-                            <IconButton>
-                              <DeleteIcon />
-                            </IconButton>
-                          </Tooltip>
-                        </CardContent>
-                      </CardActionArea>
-                    </Card>
-                  </Grid>
-                );
-              })}
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                sx={{ mt: 3, mb: 2 }}
+              >
+                Search
+              </Button>
             </Grid>
-            <Box
-              component="form"
-              noValidate
-              onSubmit={onClickSearch}
-              sx={{ mt: 3 }}
-            >
-              <Typography component="h1" variant="h5" mb={2}>
-                My Notes
-              </Typography>
-              <Grid container spacing={2} sx={{ flexGrow: 1 }}>
-                <Grid item xs={6} sm={14}>
-                  <TextField
-                    fullWidth
-                    id="search"
-                    label="Search by title"
-                    name="search"
-                  />
-
-                  <Button
-                    type="submit"
-                    fullWidth
-                    variant="contained"
-                    sx={{ mt: 3, mb: 2 }}
-                  >
-                    Search
-                  </Button>
-                </Grid>
-              </Grid>
-            </Box>
-          </React.Fragment>
-        ) : (
-          <React.Fragment>
-            <Typography component="h1" variant="h5" my={2}>
-              All Notes
-            </Typography>
-            <Grid
-              container
-              rowSpacing={1}
-              columnSpacing={{ xs: 1, sm: 2, md: 3 }}
-            >
-              {allNotesList.map((note) => {
-                return (
-                  <Grid item xs={6} key={note.id}>
-                    <Card sx={{ maxWidth: 300 }}>
-                      <CardActionArea>
-                        <CardContent>
-                          <Typography gutterBottom variant="h5" component="div">
-                            {note.title}
-                          </Typography>
-
-                          {/* XSS */}
-                          <div
-                            contentEditable="true"
-                            dangerouslySetInnerHTML={{ __html: note.content }}
-                          ></div>
-
-                          {/* XSS SOLUTION */}
-                          {/* <Typography variant="body2" color="text.secondary">
-                          {note.content}
-                        </Typography> */}
-                        </CardContent>
-                      </CardActionArea>
-                    </Card>
-                  </Grid>
-                );
-              })}
-            </Grid>
-          </React.Fragment>
-        )}
+          </Grid>
+        </Box>
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell component="th">Email</TableCell>
+                <TableCell component="th">Name</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {customersBySearchList.map((customer) => (
+                <TableRow key={customer.id}>
+                  <TableCell>{customer.email}</TableCell>
+                  <TableCell
+                    component="th"
+                    dangerouslySetInnerHTML={{ __html: customer.name }}
+                  ></TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </Box>
     </Container>
   );

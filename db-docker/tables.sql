@@ -12,9 +12,26 @@ CREATE TABLE users(
                       salt VARCHAR(100)
 );
 
-CREATE TABLE notes(
+CREATE TABLE customers(
                       id int AUTO_INCREMENT PRIMARY KEY,
+                      inviting_id int,
+                      name VARCHAR(50),
                       email VARCHAR(50),
-                      title VARCHAR(50),
-                      content VARCHAR(1000)
+                      FOREIGN KEY (inviting_id) REFERENCES users(id)
 );
+
+CREATE TABLE passwords(
+                      password VARCHAR(100),
+                      user_id int,
+                      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                      FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+DELIMITER //
+
+CREATE PROCEDURE getAllCustomers()
+BEGIN
+	SELECT *  FROM customers;
+END //
+
+DELIMITER ;

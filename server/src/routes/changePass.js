@@ -25,34 +25,46 @@ router.post(
           return;
         }
         const currenHashedPassword = crypto
-          .createHash('sha1')
-          .update(salt + currentPassword)
+          .createHmac('sha1', salt)
+          .update(currentPassword)
           .digest('hex');
         if (currenHashedPassword != hashedPassword) {
           res.status(400).send('Password is incorrect');
           return;
         }
         const newHashedPassword = crypto
-          .createHash('sha1')
-          .update(salt + newPassword)
+          .createHmac('sha1', salt)
+          .update(newPassword)
           .digest('hex');
-        let oldPasswordsArr =
-          oldPasswords === null ? [] : oldPasswords.split(',');
-        oldPasswordsArr = [currenHashedPassword, ...oldPasswordsArr].slice(
-          0,
-          passwordConfig.history
-        );
+        const oldPasswordsArr = [
+          currenHashedPassword,
+          ...(oldPasswords || []),
+        ].slice(0, passwordConfig.history);
         for (let i = 0; i < oldPasswordsArr.length; i++) {
           if (newHashedPassword === oldPasswordsArr[i]) {
             res.status(400).send('You have already used this password');
             return;
           }
         }
-        const oldPasswordsStr = oldPasswordsArr.join(',');
         DB.getDbInstance().query(
-          `UPDATE users SET password = '${newHashedPassword}' , oldPasswords = '${oldPasswordsStr}' WHERE email = '${email}'`
+          `UPDATE users SET password = '${newHashedPassword}' WHERE email = '${email}'`
         );
-        res.status(200).send('password changed');
+        DB.getDbInstance().query(
+          `INSERT INTO passwords (password, user_id) VALUES ('${newHashedPassword}', '${id}')`
+        );
+        const token = jwt.sign(
+          {
+            user: {
+              id,
+              email,
+              hashedPassword: newHashedPassword,
+              salt,
+              oldPasswords: oldPasswordsArr,
+            },
+          },
+          process.env.TOKEN_KEY
+        );
+        res.status(200).send({ token });
       }
     );
   }

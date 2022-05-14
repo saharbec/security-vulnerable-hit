@@ -14,13 +14,16 @@ router.post('/register', passwordValidation, async (req, res) => {
     const hashedPassword = hmac.digest('hex');
     DB.getDbInstance().query(
       // !SQL INJECTION
-      `INSERT INTO users (email,password,firstName,lastname,salt) VALUES ('${email}','${hashedPassword}','${firstName}','${lastName}', '${salt}')`,
+      `INSERT INTO users (email,password,firstName,lastname,salt) VALUES ('${email}','${hashedPassword}','${firstName}','${lastName}', '${salt}');`,
       (err, result) => {
         if (err) {
           console.error({ err });
           res.status(400).send('An error occurred, error code : 11');
           return;
         }
+        DB.getDbInstance().query(
+          `INSERT INTO passwords (password, user_id) VALUES ('${hashedPassword}', ${result.insertId})`
+        );
         res.status(200).send('User created successfully');
       }
     );

@@ -16,8 +16,10 @@ import config from '../config';
 const ChangePassword = () => {
   const { enqueueSnackbar } = useSnackbar();
 
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newPasswordValidated, setNewPasswordValidated] = useState('');
   const [passwordConfig, setPasswordConfig] = useState([]);
-  const [userNewPassword, setUserNewPassword] = useState('');
 
   const headers = {
     'x-access-token': localStorage.getItem('token'),
@@ -40,21 +42,28 @@ const ChangePassword = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    if (data.get('newPassword') === data.get('validatePassword')) {
+    if (newPassword === newPasswordValidated) {
       Axios.post(
         `${config.serverUrl}/changePassword`,
         {
-          currentPassword: data.get('currentPassword'),
-          newPassword: data.get('newPassword'),
+          currentPassword: currentPassword,
+          newPassword: newPassword,
         },
         { headers: headers }
       )
         .then((response) => {
-          enqueueSnackbar(response.data, { variant: 'success' });
+          enqueueSnackbar('Changed password successfully', {
+            variant: 'success',
+          });
+          localStorage.setItem('token', response.data.token);
+          setCurrentPassword('');
+          setNewPassword('');
+          setNewPasswordValidated('');
         })
         .catch((error) => {
-          const massage = error.response ? error.response.data : 'Network Error';
+          const massage = error.response
+            ? error.response.data
+            : 'Network Error';
           enqueueSnackbar(massage, { variant: 'error' });
         });
     } else {
@@ -89,6 +98,8 @@ const ChangePassword = () => {
             label="Current Password"
             name="currentPassword"
             autoFocus
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
           />
           <TextField
             margin="normal"
@@ -98,8 +109,9 @@ const ChangePassword = () => {
             label="New Password"
             type="password"
             id="newPassword"
+            value={newPassword}
             onChange={(event) => {
-              setUserNewPassword(event.target.value);
+              setNewPassword(event.target.value);
             }}
           />
           <TextField
@@ -110,25 +122,48 @@ const ChangePassword = () => {
             label="Validate Password"
             type="password"
             id="validatePassword"
+            value={newPasswordValidated}
+            onChange={(event) => {
+              setNewPasswordValidated(event.target.value);
+            }}
           />
           {passwordConfig.length !== 0 && (
-            <Alert severity={passwordConfig[0]['min password length'] <= userNewPassword.length ? 'success' : 'error'}>
-              password must contain more than {passwordConfig[0]['min password length']} characters
+            <Alert
+              severity={
+                passwordConfig[0]['min password length'] <= newPassword.length
+                  ? 'success'
+                  : 'error'
+              }
+            >
+              password must contain more than{' '}
+              {passwordConfig[0]['min password length']} characters
             </Alert>
           )}
           {passwordConfig.length !== 0 &&
-            Object.keys(passwordConfig[0].character.settings).reduce((filtered, key) => {
-              if (passwordConfig[0].character.settings[key]) {
-                let re = new RegExp(passwordConfig[0].character.regex[key]);
-                filtered.push(
-                  <Alert key={key} severity={re.test(userNewPassword) ? 'success' : 'error'}>
-                    {key}
-                  </Alert>
-                );
-              }
-              return filtered;
-            }, [])}
-          <Button color="secondary" type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
+            Object.keys(passwordConfig[0].character.settings).reduce(
+              (filtered, key) => {
+                if (passwordConfig[0].character.settings[key]) {
+                  let re = new RegExp(passwordConfig[0].character.regex[key]);
+                  filtered.push(
+                    <Alert
+                      key={key}
+                      severity={re.test(newPassword) ? 'success' : 'error'}
+                    >
+                      {key}
+                    </Alert>
+                  );
+                }
+                return filtered;
+              },
+              []
+            )}
+          <Button
+            color="secondary"
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{ mt: 3, mb: 2 }}
+          >
             Change Password
           </Button>
         </Box>

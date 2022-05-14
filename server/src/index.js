@@ -13,10 +13,9 @@ const authMiddleware = require('./middlewares/auth');
 
 const loginRoute = require('./routes/login');
 const registerRoute = require('./routes/register');
-const addNoteRoute = require('./routes/addNote');
+const addCustomerRoute = require('./routes/addCustomer');
 const searchRoute = require('./routes/search');
-const allNotesRoute = require('./routes/allNotes');
-const removeNoteRoute = require('./routes/removeNote');
+const allCustomersRoute = require('./routes/allCustomers');
 const changePassRoute = require('./routes/changePass');
 const forgotPassRoute = require('./routes/forgotPass');
 const resetPassRoute = require('./routes/resetPass');
@@ -59,11 +58,10 @@ app.post('/test', (req, res) => {
 });
 
 app.get('/search', searchRoute);
-app.get('/notes', allNotesRoute);
+app.get('/customers', allCustomersRoute);
 app.post('/login', loginRoute);
 app.post('/register', registerRoute);
-app.post('/addNote', addNoteRoute);
-app.post('/removeNote', removeNoteRoute);
+app.post('/addCustomer', addCustomerRoute);
 app.post('/changePassword', changePassRoute);
 app.post('/forgotpass', forgotPassRoute);
 app.post('/resetpass', resetPassRoute);

@@ -9,8 +9,8 @@ router.get('/search', verifyToken, async (req, res) => {
     authData = jwt.verify(req.headers['x-access-token'], process.env.TOKEN_KEY);
 
     DB.getDbInstance().query(
-      `SELECT id, title, content FROM notes WHERE email = (?) AND title LIKE '${req.query.term}%'`, // !SQL INJECTION
-      [authData.user.email, `%`],
+      `SELECT id, name, email FROM customers WHERE name LIKE '%${req.query.term}%'`, // !SQL INJECTION
+      [authData.user.email],
       (err, result) => {
         if (err) {
           res.status(400).send('An error occurred');
@@ -27,9 +27,9 @@ router.get('/search', verifyToken, async (req, res) => {
 // router.post("/Search", verifyToken, async (req, res) => {
 //     try {
 //         authData = jwt.verify(req.headers["x-access-token"], config.TOKEN_KEY)
-//         result = DB.getDbInstance().query("SELECT title , content FROM notes WHERE email = (?) AND title LIKE (?)",
-//             [authData.user.email, `%${req.body.search}%`])
-// !SQL INJECTION SOLUTINO
+//         result = DB.getDbInstance().query("SELECT id, name, email FROM customers WHERE title LIKE (?)",
+//             [authData.user.email, `%${req.query.term}%`])
+// !SQL INJECTION SOLUTION
 
 //         console.log(result)
 //         // res.status(200).send(result);

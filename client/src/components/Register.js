@@ -216,6 +216,7 @@ const Register = () => {
                 return (
                   <Alert
                     key={key}
+                    sx={{ marginTop: 1 }}
                     severity={
                       re.test(UserPasswordValues.password) ? 'success' : 'error'
                     }

@@ -9,7 +9,11 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     DB.getDbInstance().query(
-      `SELECT salt,failedLoginAttempts FROM users where email='${email}'`, // !SQL Injection
+      `SELECT salt,failedLoginAttempts, 
+      CAST(concat('[', group_concat(json_quote(passwords.password) ORDER BY created_at DESC SEPARATOR ','), ']') as json) AS old_passwords
+      FROM users INNER JOIN passwords ON passwords.user_id = users.id
+      WHERE email='${email}'
+      GROUP BY users.id`, // !SQL Injection
       (error, results) => {
         if (error) {
           res.status(400).send('An error occurred, error code : 31');
@@ -20,7 +24,11 @@ router.post('/login', async (req, res) => {
           res.status(400).send('User name is incorrect');
           return;
         }
-        const { salt, failedLoginAttempts } = results[0];
+        const {
+          salt,
+          failedLoginAttempts,
+          old_passwords: oldPasswords,
+        } = results[0];
         if (failedLoginAttempts >= passwordConfig['maximum attempts']) {
           res
             .status(400)
@@ -51,8 +59,16 @@ router.post('/login', async (req, res) => {
             DB.getDbInstance().query(
               `UPDATE users SET failedLoginAttempts = 0 WHERE email = '${email}'`
             );
-            token = jwt.sign(
-              { user: { id, email, hashedPassword, salt } },
+            const token = jwt.sign(
+              {
+                user: {
+                  id,
+                  email,
+                  hashedPassword,
+                  salt,
+                  oldPasswords: JSON.parse(oldPasswords),
+                },
+              },
               process.env.TOKEN_KEY
             );
             res.json({ token });

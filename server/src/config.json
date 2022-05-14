@@ -1,12 +1,12 @@
 {
   "passwordRequirements": {
-    "min password length": 6,
+    "min password length": 10,
     "character": {
       "settings": {
         "must contain numbers": true,
         "must contain lowercase": true,
-        "must contain uppercase": false,
-        "must contain special character": false
+        "must contain uppercase": true,
+        "must contain special character": true
       },
 
       "regex": {
